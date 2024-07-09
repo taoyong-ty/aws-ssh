@@ -353,44 +353,11 @@ def main():
 
   # Store hostname targets
   target = args.hostname
-  tgt_instance_id = None
-  tgt_hostname = None
-
-  # Parse args
-  if target.startswith('i-'):
-    tgt_instance_id = target
-  else:
-    tgt_hostname = target
-
-  # If no instance ID, look up via the tag
-  if not tgt_instance_id:
-    inst = ec2_client.describe_instances(
-      Filters=[
-        {
-          'Name': 'tag:Name',
-          'Values': [
-            tgt_hostname
-          ]
-        }
-      ]
-    )
-
-    if len(inst['Reservations'][0]['Instances']) == 0:
-      raise Exception('instance not found')
-
-    elif len(inst['Reservations'][0]['Instances']) > 1:
-      raise Exception('multiple instances found, tag is ambiguous!')
-    else:
-      tgt_instance_id = inst['Reservations'][0]['Instances'][0]['InstanceId']
-
-  # Print hostname
-  if tgt_hostname:
-    logger.info('connecting to %s (%s)...', tgt_instance_id, tgt_hostname)
-  else:
-    logger.info('connecting to %s...' % tgt_instance_id)
+  
+  logger.info('connecting to %s...' % target)
 
   session = ssm_client.start_session(
-    Target=tgt_instance_id
+    Target=target
   )
 
   logger.info('got session id %s', session['SessionId'])
